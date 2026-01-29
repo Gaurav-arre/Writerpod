@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { chaptersAPI, ttsAPI } from '../services/api';
 import { Chapter } from '../types';
 import TTSPlayer from '../components/TTSPlayer';
@@ -9,18 +9,14 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const TTSDashboard: React.FC = () => {
   const { chapterId } = useParams<{ chapterId: string }>();
-  const navigate = useNavigate();
+
   
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  useEffect(() => {
-    fetchChapter();
-  }, [chapterId]);
-
-  const fetchChapter = async () => {
+  const fetchChapter = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await chaptersAPI.getChapter(chapterId!);
@@ -31,7 +27,11 @@ const TTSDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [chapterId]);
+
+  useEffect(() => {
+    fetchChapter();
+  }, [fetchChapter]);
 
   const handleSaveSettings = async (settings: { voice: string; speed: number; pitch: number }) => {
     try {

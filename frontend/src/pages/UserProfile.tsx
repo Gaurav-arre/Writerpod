@@ -79,7 +79,7 @@ const UserProfile: React.FC = () => {
           <div className="border-t border-gray-200">
             <ul className="divide-y divide-gray-200">
               <li>
-                <a href="#" className="block hover:bg-gray-50 cursor-pointer">
+                <a href="/story/1" className="block hover:bg-gray-50 cursor-pointer">
                   <div className="px-4 py-4 sm:px-6">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-indigo-600 truncate">Getting Started with WriterPod</p>
@@ -115,7 +115,7 @@ const UserProfile: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="block hover:bg-gray-50 cursor-pointer">
+                <a href="/story/2" className="block hover:bg-gray-50 cursor-pointer">
                   <div className="px-4 py-4 sm:px-6">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-indigo-600 truncate">My Adventure Story</p>

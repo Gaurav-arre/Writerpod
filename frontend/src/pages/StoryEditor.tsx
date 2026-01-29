@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 export function StoryEditor() {
   const { storyId, episodeId } = useParams();
   const navigate = useNavigate();
-  const editorRef = useRef<HTMLDivElement>(null);
+
   
   const [story, setStory] = useState<any>(null);
   const [episodes, setEpisodes] = useState<any[]>([]);
