@@ -4,7 +4,7 @@ import { usePublication } from '../contexts/PublicationContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Notes = () => {
-  const { user, isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading } = useAuth();
   const { notes, getNoteFeed, createNote, isLoading: publicationLoading, error } = usePublication();
   const [newNote, setNewNote] = useState('');
   const [isPosting, setIsPosting] = useState(false);
@@ -12,7 +12,7 @@ const Notes = () => {
 
   useEffect(() => {
     getNoteFeed();
-  }, []);
+  }, [getNoteFeed]);
 
   const handlePostNote = async (e: React.FormEvent) => {
     e.preventDefault();

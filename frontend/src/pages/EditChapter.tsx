@@ -128,7 +128,7 @@ const EditChapter: React.FC = () => {
       };
       
       const response = await chaptersAPI.updateChapter(id!, updateData as any);
-      const updatedChapter = response.data.chapter;
+      // const updatedChapter = response.data.chapter; // Unused variable - keeping for potential future use
       
       toast.success('Chapter published successfully!');
       

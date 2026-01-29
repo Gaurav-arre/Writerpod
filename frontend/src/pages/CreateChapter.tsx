@@ -133,7 +133,7 @@ const CreateChapter: React.FC = () => {
         chapterNumber: nextChapterNumber,
         status: 'draft' // Default to draft when creating a new chapter
       });
-      const newChapter = response.data.chapter;
+      // const newChapter = response.data.chapter; // Unused variable - keeping for potential future use
       
       // Navigate to the story detail page
       navigate(`/story/${storyId}`);

@@ -8,7 +8,7 @@ const Publications = () => {
 
   useEffect(() => {
     getPublications();
-  }, []);
+  }, [getPublications]);
 
   if (isLoading) {
     return <LoadingSpinner />;
