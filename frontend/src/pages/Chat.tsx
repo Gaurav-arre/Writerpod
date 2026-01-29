@@ -22,7 +22,7 @@ const Chat = () => {
       getChat(id);
       getMessages(id);
     }
-  }, [id]);
+  }, [id, getChat, getMessages]);
 
   useEffect(() => {
     scrollToBottom();

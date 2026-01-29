@@ -15,11 +15,7 @@ const ChapterDetail: React.FC = () => {
   const [error, setError] = useState('');
   const [isReadingAloud, setIsReadingAloud] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [storyId, chapterNumber]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     if (!storyId) return;
     
     try {
@@ -53,7 +49,11 @@ const ChapterDetail: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [storyId, chapterNumber]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const toggleReadAloud = () => {
     setIsReadingAloud(!isReadingAloud);

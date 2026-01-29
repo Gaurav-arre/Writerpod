@@ -98,7 +98,7 @@ const CreateChapter: React.FC = () => {
     }
   };
 
-  const getNextChapterNumber = async (): Promise<number> => {
+  /* const getNextChapterNumber = async (): Promise<number> => {
     try {
       // Fetch ALL existing chapters for this story
       const chapters = await getAllChaptersForStory();
@@ -115,7 +115,7 @@ const CreateChapter: React.FC = () => {
       // Default to 1 if we can't fetch chapters
       return 1;
     }
-  };
+  }; */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,13 +127,13 @@ const CreateChapter: React.FC = () => {
       const { data } = await chaptersAPI.getNextChapterNumber(storyId!);
       const nextChapterNumber = data.nextNumber;
       
-      const response = await chaptersAPI.createChapter({
+      /* const response = await chaptersAPI.createChapter({
         ...chapterData,
         story: storyId!,
         chapterNumber: nextChapterNumber,
         status: 'draft' // Default to draft when creating a new chapter
       });
-      // const newChapter = response.data.chapter; // Unused variable - keeping for potential future use
+      const newChapter = response.data.chapter; */
       
       // Navigate to the story detail page
       navigate(`/story/${storyId}`);
