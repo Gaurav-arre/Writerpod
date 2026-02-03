@@ -70,33 +70,7 @@ const CreateChapter: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  /* const getAllChaptersForStory = async (): Promise<any[]> => {
-    try {
-      const allChapters: any[] = [];
-      let page = 1;
-      let hasMore = true;
-      
-      // Fetch all chapters by iterating through all pages
-      while (hasMore) {
-        const response = await chaptersAPI.getChaptersByStory(storyId!, page);
-        const { data, pagination } = response.data;
-        
-        allChapters.push(...data);
-        
-        // Check if there are more pages
-        if (page >= pagination.pages) {
-          hasMore = false;
-        } else {
-          page++;
-        }
-      }
-      
-      return allChapters;
-    } catch (error) {
-      console.error('Error fetching all chapters:', error);
-      throw error;
-    }
-  }; */
+  
 
   /* const getNextChapterNumber = async (): Promise<number> => {
     try {
@@ -124,8 +98,7 @@ const CreateChapter: React.FC = () => {
     setIsLoading(true);
     try {
       // Get the next chapter number from the backend
-      // const { data: { nextNumber: nextChapterNumber } } = await chaptersAPI.getNextChapterNumber(storyId!);
-      // const nextChapterNumber = nextNumber;
+      // const nextChapterNumber = (await chaptersAPI.getNextChapterNumber(storyId!)).data.nextNumber;
       
       /* const response = await chaptersAPI.createChapter({
         ...chapterData,
