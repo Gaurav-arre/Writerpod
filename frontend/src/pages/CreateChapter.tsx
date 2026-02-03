@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { storiesAPI, chaptersAPI } from '../services/api';
+import { storiesAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const CreateChapter: React.FC = () => {
@@ -70,7 +70,7 @@ const CreateChapter: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const getAllChaptersForStory = async (): Promise<any[]> => {
+  /* const getAllChaptersForStory = async (): Promise<any[]> => {
     try {
       const allChapters: any[] = [];
       let page = 1;
@@ -96,7 +96,7 @@ const CreateChapter: React.FC = () => {
       console.error('Error fetching all chapters:', error);
       throw error;
     }
-  };
+  }; */
 
   /* const getNextChapterNumber = async (): Promise<number> => {
     try {
@@ -124,8 +124,8 @@ const CreateChapter: React.FC = () => {
     setIsLoading(true);
     try {
       // Get the next chapter number from the backend
-      const { data } = await chaptersAPI.getNextChapterNumber(storyId!);
-      const nextChapterNumber = data.nextNumber;
+      // const { data: { nextNumber: nextChapterNumber } } = await chaptersAPI.getNextChapterNumber(storyId!);
+      // const nextChapterNumber = nextNumber;
       
       /* const response = await chaptersAPI.createChapter({
         ...chapterData,

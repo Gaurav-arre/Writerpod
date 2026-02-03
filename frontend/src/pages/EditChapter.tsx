@@ -121,11 +121,11 @@ const EditChapter: React.FC = () => {
 
     setIsPublishing(true);
     try {
-      const updateData = {
-        title: chapterData.title,
-        content: chapterData.content,
-        status: 'published'
-      };
+      // const updateData = {
+      //   title: chapterData.title,
+      //   content: chapterData.content,
+      //   status: 'published'
+      // };
       
       // const response = await chaptersAPI.updateChapter(id!, updateData as any);
       // const updatedChapter = response.data.chapter; // Unused variable - keeping for potential future use
