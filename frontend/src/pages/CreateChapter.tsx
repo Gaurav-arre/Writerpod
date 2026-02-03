@@ -72,24 +72,7 @@ const CreateChapter: React.FC = () => {
 
   
 
-  /* const getNextChapterNumber = async (): Promise<number> => {
-    try {
-      // Fetch ALL existing chapters for this story
-      const chapters = await getAllChaptersForStory();
-      
-      // Find the highest chapter number and add 1
-      if (chapters.length === 0) {
-        return 1;
-      }
-      
-      const maxChapterNumber = Math.max(...chapters.map((chapter: any) => chapter.chapterNumber));
-      return maxChapterNumber + 1;
-    } catch (error) {
-      console.error('Error calculating next chapter number:', error);
-      // Default to 1 if we can't fetch chapters
-      return 1;
-    }
-  }; */
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +86,7 @@ const CreateChapter: React.FC = () => {
       /* const response = await chaptersAPI.createChapter({
         ...chapterData,
         story: storyId!,
-        chapterNumber: nextChapterNumber,
+        chapterNumber: (await chaptersAPI.getNextChapterNumber(storyId!)).data.nextNumber,
         status: 'draft' // Default to draft when creating a new chapter
       });
       const newChapter = response.data.chapter; */
