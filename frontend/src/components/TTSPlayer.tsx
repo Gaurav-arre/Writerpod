@@ -26,6 +26,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
   const [speed, setSpeed] = useState(initialAudioSettings?.speed || 1.0);
   const [pitch, setPitch] = useState(initialAudioSettings?.pitch || 1.0);
   const [audioFile, setAudioFile] = useState(initialAudioFile || '');
+  const [audioData, setAudioData] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -56,6 +57,9 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
       });
 
       setAudioFile(response.data.chapter.audioFile);
+      if (response.data.chapter.audioData) {
+        setAudioData(response.data.chapter.audioData);
+      }
       setIsPlaying(false);
     } catch (err) {
       console.error('Error generating audio:', err);
@@ -227,7 +231,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
       {audioFile && (
         <audio
           ref={audioRef}
-          src={`${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${audioFile}`}
+          src={audioData || `${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${audioFile}`}
           onEnded={handleAudioEnded}
           onError={handleAudioError}
           className="hidden"

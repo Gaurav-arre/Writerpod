@@ -20,6 +20,7 @@ export function StoryEditor() {
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [loading, setLoading] = useState(true);
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState('');
+  const [base64AudioData, setBase64AudioData] = useState('');
 
   useEffect(() => {
     if (!storyId || storyId === 'undefined' || storyId === 'null') {
@@ -193,8 +194,8 @@ export function StoryEditor() {
                     key={ep._id}
                     onClick={() => selectEpisode(ep)}
                     className={`w-full text-left p-3 rounded-lg transition-all ${currentEpisode?._id === ep._id
-                        ? 'bg-orange-500/20 border border-orange-500/30'
-                        : 'hover:bg-white/5 border border-transparent'
+                      ? 'bg-orange-500/20 border border-orange-500/30'
+                      : 'hover:bg-white/5 border border-transparent'
                       }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -230,8 +231,8 @@ export function StoryEditor() {
                       key={fmt}
                       onClick={() => setPublishFormat(fmt)}
                       className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${publishFormat === fmt
-                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                          : 'text-slate-400 hover:text-white'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                        : 'text-slate-400 hover:text-white'
                         }`}
                     >
                       {fmt === 'text' ? '📖 Text' : fmt === 'audio' ? '🎧 Audio' : '📖🎧 Both'}
@@ -356,7 +357,7 @@ export function StoryEditor() {
                 title={title}
                 content={content}
                 publishFormat={publishFormat}
-                audioUrl={generatedAudioUrl}
+                audioUrl={base64AudioData || generatedAudioUrl}
                 onClose={() => setShowPreview(false)}
               />
             )}
@@ -415,7 +416,12 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
       const res = await ttsAPI.generateAudio(text, { voice: selectedVoice, speed, stability });
       const fullUrl = res.data.audioUrl;
       setAudioUrl(fullUrl);
-      onAudioGenerated(fullUrl);
+      if (res.data.audioData) {
+        setBase64AudioData(res.data.audioData);
+        onAudioGenerated(res.data.audioData);
+      } else {
+        onAudioGenerated(fullUrl);
+      }
     } catch (err: any) {
       console.error('TTS error:', err);
       setError(err.response?.data?.message || 'Failed to generate audio. Please try again.');

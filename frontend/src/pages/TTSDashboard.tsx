@@ -15,6 +15,7 @@ const TTSDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [localAudioData, setLocalAudioData] = useState<string | null>(null);
 
   const fetchChapter = React.useCallback(async () => {
     try {
@@ -80,6 +81,9 @@ const TTSDashboard: React.FC = () => {
           ...chapter,
           audioFile: response.data.chapter.audioFile
         });
+        if (response.data.chapter.audioData) {
+          setLocalAudioData(response.data.chapter.audioData);
+        }
       }
 
       setSuccessMessage('Audio generated successfully!');
@@ -217,7 +221,7 @@ const TTSDashboard: React.FC = () => {
           {/* Audio Player */}
           {chapter.audioFile && (
             <AudioPlayer
-              audioUrl={`${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${chapter.audioFile}`}
+              audioUrl={localAudioData || `${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${chapter.audioFile}`}
               title={chapter.title}
             />
           )}

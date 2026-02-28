@@ -14,6 +14,7 @@ const ChapterDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isReadingAloud, setIsReadingAloud] = useState(false);
+  const [localAudioData, setLocalAudioData] = useState<string | null>(null);
 
   const fetchData = React.useCallback(async () => {
     if (!storyId) return;
@@ -168,8 +169,8 @@ const ChapterDetail: React.FC = () => {
                 <button
                   onClick={toggleReadAloud}
                   className={`inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isReadingAloud
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20'
-                      : 'bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20'
+                    : 'bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10'
                     }`}
                 >
                   <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -196,7 +197,7 @@ const ChapterDetail: React.FC = () => {
             <div className="prose prose-invert prose-lg max-w-none">
               <SynchronizedReader
                 content={chapter.content || '<p>No content available.</p>'}
-                audioUrl={chapter.audioFile ? `${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${chapter.audioFile}` : undefined}
+                audioUrl={localAudioData || (chapter.audioFile ? `${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${chapter.audioFile}` : undefined)}
                 isPlaying={isReadingAloud}
               />
             </div>
@@ -207,8 +208,8 @@ const ChapterDetail: React.FC = () => {
               onClick={goToPrevious}
               disabled={!hasPrevious}
               className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${hasPrevious
-                  ? 'bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10'
-                  : 'bg-white/5 text-slate-600 border border-slate-800 cursor-not-allowed'
+                ? 'bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10'
+                : 'bg-white/5 text-slate-600 border border-slate-800 cursor-not-allowed'
                 }`}
             >
               <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -221,8 +222,8 @@ const ChapterDetail: React.FC = () => {
               onClick={goToNext}
               disabled={!hasNext}
               className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${hasNext
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20'
-                  : 'bg-white/5 text-slate-600 border border-slate-800 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20'
+                : 'bg-white/5 text-slate-600 border border-slate-800 cursor-not-allowed'
                 }`}
             >
               Next

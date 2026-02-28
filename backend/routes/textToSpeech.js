@@ -121,9 +121,15 @@ const generateSpeech = async (text, voice = 'narrator-warm', settings = {}) => {
       throw new Error(`Generated audio buffer is too small (${buffer.length} bytes).`);
     }
 
-    await fs.writeFile(audioPath, buffer);
+    // Still write to /tmp for local compatibility, but we'll return the buffer
+    try {
+      await fs.writeFile(audioPath, buffer);
+    } catch (e) {
+      console.warn('Could not write to disk, continuing with buffer only');
+    }
 
-    return { audioFileName, error: null };
+    const base64Data = buffer.toString('base64');
+    return { audioFileName, audioData: `data:audio/mpeg;base64,${base64Data}`, error: null };
   } catch (error) {
     let errorDetail = error.message;
     console.error('ElevenLabs TTS error details:');
@@ -138,8 +144,10 @@ const generateSpeech = async (text, voice = 'narrator-warm', settings = {}) => {
       } catch (e) { }
     }
     console.log('Falling back to demo audio (silent MP3)...');
+
+    // For demo, we still want to return a filename and maybe empty data
     const demoFileName = await generateDemoAudio();
-    return { audioFileName: demoFileName, error: errorDetail };
+    return { audioFileName: demoFileName, audioData: null, error: errorDetail };
   }
 };
 
@@ -159,7 +167,7 @@ router.post('/generate', protect, [
 
     const { text, voice = 'narrator-warm', speed = 1.0, pitch = 1.0, stability = 0.5, clarity = 0.75 } = req.body;
 
-    const { audioFileName, error: ttsError } = await generateSpeech(text, voice, { speed, pitch, stability, clarity });
+    const { audioFileName, audioData, error: ttsError } = await generateSpeech(text, voice, { speed, pitch, stability, clarity });
 
     const protocol = req.headers['x-forwarded-proto'] || 'http';
     const host = req.headers['host'];
@@ -169,6 +177,7 @@ router.post('/generate', protect, [
       message: ttsError ? 'Generated with fallback due to error' : 'Audio generated successfully',
       audioFile: audioFileName,
       audioUrl: absoluteAudioUrl,
+      audioData: audioData, // Base64 data for Vercel compatibility
       error: ttsError,
       settings: { voice, speed, pitch, stability, clarity, duration: Math.ceil(text.length / 180) * 60 }
     });
@@ -213,7 +222,7 @@ router.post('/chapter/:id', protect, [
       clarity: clarity || chapter.audioSettings.clarity || 0.75
     };
 
-    const { audioFileName, error: ttsError } = await generateSpeech(chapter.content, audioSettings.voice, audioSettings);
+    const { audioFileName, audioData, error: ttsError } = await generateSpeech(chapter.content, audioSettings.voice, audioSettings);
 
     if (saveVersion && chapter.audioFile) {
       const nextVersion = (chapter.audioVersionHistory?.length || 0) + 1;
@@ -241,6 +250,7 @@ router.post('/chapter/:id', protect, [
         title: chapter.title,
         audioFile: audioFileName,
         audioUrl: absoluteAudioUrl,
+        audioData: audioData, // Base64 data for Vercel
         audioSettings,
         versionHistory: chapter.audioVersionHistory
       }
