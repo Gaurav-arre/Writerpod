@@ -56,7 +56,10 @@ app.use(morgan('combined'));
 
 // Static files
 const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadsPath = process.env.NODE_ENV === 'production'
+  ? '/tmp'
+  : path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

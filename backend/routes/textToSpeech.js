@@ -99,7 +99,7 @@ const generateSpeech = async (text, voice = 'narrator-warm', settings = {}) => {
     const audio = await elevenlabs.generate({
       voice: voiceConfig.id,
       text: text,
-      model_id: 'eleven_multilingual_v2',
+      model_id: 'eleven_monolingual_v1',
       voice_settings: {
         stability: stability,
         similarity_boost: clarity,
