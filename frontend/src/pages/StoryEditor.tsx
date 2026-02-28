@@ -415,13 +415,12 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
       }
       const res = await ttsAPI.generateAudio(text, { voice: selectedVoice, speed, stability });
       const fullUrl = res.data.audioUrl;
-      setAudioUrl(fullUrl);
+      const audioToUse = res.data.audioData || fullUrl;
+      setAudioUrl(audioToUse);
       if (res.data.audioData) {
         setBase64AudioData(res.data.audioData);
-        onAudioGenerated(res.data.audioData);
-      } else {
-        onAudioGenerated(fullUrl);
       }
+      onAudioGenerated(audioToUse);
     } catch (err: any) {
       console.error('TTS error:', err);
       setError(err.response?.data?.message || 'Failed to generate audio. Please try again.');
