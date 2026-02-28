@@ -9,7 +9,7 @@ const { ElevenLabsClient } = require('elevenlabs');
 const router = express.Router();
 
 const elevenlabs = new ElevenLabsClient({
-  apiKey: process.env.ELEVENLABS_API_KEY || 'YOUR_API_KEY_HERE'
+  apiKey: process.env.ELEVENLABS_API_KEY
 });
 
 const VOICE_LIBRARY = {
@@ -116,18 +116,30 @@ const generateSpeech = async (text, voice = 'narrator-warm', settings = {}) => {
       chunks.push(chunk);
     }
     const buffer = Buffer.concat(chunks);
+
+    if (buffer.length < 100) {
+      throw new Error(`Generated audio buffer is too small (${buffer.length} bytes).`);
+    }
+
     await fs.writeFile(audioPath, buffer);
 
-    return audioFileName;
+    return { audioFileName, error: null };
   } catch (error) {
+    let errorDetail = error.message;
     console.error('ElevenLabs TTS error details:');
     console.error('Message:', error.message);
     if (error.response) {
       console.error('Status:', error.response.status);
-      console.error('Data:', JSON.stringify(error.response.data));
+      errorDetail = `${error.message} (Status: ${error.response.status})`;
+      try {
+        const errorData = JSON.stringify(error.response.data);
+        console.error('Data:', errorData);
+        errorDetail += ` - ${errorData}`;
+      } catch (e) { }
     }
     console.log('Falling back to demo audio (silent MP3)...');
-    return await generateDemoAudio();
+    const demoFileName = await generateDemoAudio();
+    return { audioFileName: demoFileName, error: errorDetail };
   }
 };
 
@@ -147,16 +159,17 @@ router.post('/generate', protect, [
 
     const { text, voice = 'narrator-warm', speed = 1.0, pitch = 1.0, stability = 0.5, clarity = 0.75 } = req.body;
 
-    const audioFileName = await generateSpeech(text, voice, { speed, pitch, stability, clarity });
+    const { audioFileName, error: ttsError } = await generateSpeech(text, voice, { speed, pitch, stability, clarity });
 
     const protocol = req.headers['x-forwarded-proto'] || 'http';
     const host = req.headers['host'];
     const absoluteAudioUrl = `${protocol}://${host}/api/tts/audio/${audioFileName}`;
 
     res.json({
-      message: 'Audio generated successfully',
+      message: ttsError ? 'Generated with fallback due to error' : 'Audio generated successfully',
       audioFile: audioFileName,
       audioUrl: absoluteAudioUrl,
+      error: ttsError,
       settings: { voice, speed, pitch, stability, clarity, duration: Math.ceil(text.length / 180) * 60 }
     });
 
@@ -200,7 +213,7 @@ router.post('/chapter/:id', protect, [
       clarity: clarity || chapter.audioSettings.clarity || 0.75
     };
 
-    const audioFileName = await generateSpeech(chapter.content, audioSettings.voice, audioSettings);
+    const { audioFileName, error: ttsError } = await generateSpeech(chapter.content, audioSettings.voice, audioSettings);
 
     if (saveVersion && chapter.audioFile) {
       const nextVersion = (chapter.audioVersionHistory?.length || 0) + 1;
@@ -221,7 +234,8 @@ router.post('/chapter/:id', protect, [
     const absoluteAudioUrl = `${protocol}://${host}/api/tts/audio/${audioFileName}`;
 
     res.json({
-      message: 'Chapter audio generated successfully',
+      message: ttsError ? 'Generated with fallback due to error' : 'Chapter audio generated successfully',
+      error: ttsError,
       chapter: {
         id: chapter._id,
         title: chapter.title,
