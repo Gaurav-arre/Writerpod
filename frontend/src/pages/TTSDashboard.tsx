@@ -10,7 +10,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 const TTSDashboard: React.FC = () => {
   const { chapterId } = useParams<{ chapterId: string }>();
 
-  
+
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,7 +43,7 @@ const TTSDashboard: React.FC = () => {
           backgroundMusic: chapter?.audioSettings?.backgroundMusic || 'none'
         }
       });
-      
+
       // Update local state
       if (chapter) {
         setChapter({
@@ -54,7 +54,7 @@ const TTSDashboard: React.FC = () => {
           }
         });
       }
-      
+
       setSuccessMessage('Settings saved successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
@@ -73,7 +73,7 @@ const TTSDashboard: React.FC = () => {
         speed: chapter?.audioSettings?.speed || 1.0,
         pitch: chapter?.audioSettings?.pitch || 1.0
       });
-      
+
       // Update chapter with new audio file
       if (chapter) {
         setChapter({
@@ -81,7 +81,7 @@ const TTSDashboard: React.FC = () => {
           audioFile: response.data.chapter.audioFile
         });
       }
-      
+
       setSuccessMessage('Audio generated successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
@@ -198,16 +198,16 @@ const TTSDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Settings */}
         <div className="lg:col-span-1">
-          <TTSSettingsPanel 
-            chapter={chapter} 
-            onSave={handleSaveSettings} 
+          <TTSSettingsPanel
+            chapter={chapter}
+            onSave={handleSaveSettings}
           />
         </div>
 
         {/* Right Column - Player and Controls */}
         <div className="lg:col-span-2 space-y-6">
           {/* TTS Player */}
-          <TTSPlayer 
+          <TTSPlayer
             chapterId={chapterId!}
             content={chapter.content}
             initialAudioFile={chapter.audioFile}
@@ -216,8 +216,8 @@ const TTSDashboard: React.FC = () => {
 
           {/* Audio Player */}
           {chapter.audioFile && (
-            <AudioPlayer 
-              audioUrl={`${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001'}/uploads/${chapter.audioFile}`}
+            <AudioPlayer
+              audioUrl={`${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${chapter.audioFile}`}
               title={chapter.title}
             />
           )}
@@ -243,7 +243,7 @@ const TTSDashboard: React.FC = () => {
                   'Generate Audio'
                 )}
               </button>
-              
+
               {chapter.audioFile && (
                 <button
                   onClick={() => {

@@ -7,7 +7,7 @@ import SynchronizedReader from '../components/SynchronizedReader';
 const ChapterDetail: React.FC = () => {
   const { storyId, chapterNumber } = useParams<{ storyId: string; chapterNumber: string }>();
   const navigate = useNavigate();
-  
+
   const [chapter, setChapter] = useState<any>(null);
   const [story, setStory] = useState<any>(null);
   const [allChapters, setAllChapters] = useState<any[]>([]);
@@ -17,10 +17,10 @@ const ChapterDetail: React.FC = () => {
 
   const fetchData = React.useCallback(async () => {
     if (!storyId) return;
-    
+
     try {
       setLoading(true);
-      
+
       const [storyRes, chaptersRes] = await Promise.all([
         storiesAPI.getStory(storyId),
         chaptersAPI.getChaptersByStory(storyId)
@@ -34,7 +34,7 @@ const ChapterDetail: React.FC = () => {
 
       const chapterNum = parseInt(chapterNumber || '1');
       const currentChapter = chaptersData.find((c: any) => c.chapterNumber === chapterNum) || chaptersData[chapterNum - 1];
-      
+
       if (currentChapter) {
         setChapter({
           ...currentChapter,
@@ -59,11 +59,11 @@ const ChapterDetail: React.FC = () => {
     setIsReadingAloud(!isReadingAloud);
   };
 
-  const currentChapterIndex = allChapters.findIndex((c: any) => 
-    c.chapterNumber === parseInt(chapterNumber || '1') || 
+  const currentChapterIndex = allChapters.findIndex((c: any) =>
+    c.chapterNumber === parseInt(chapterNumber || '1') ||
     allChapters.indexOf(c) === parseInt(chapterNumber || '1') - 1
   );
-  
+
   const hasPrevious = currentChapterIndex > 0;
   const hasNext = currentChapterIndex < allChapters.length - 1;
 
@@ -157,21 +157,20 @@ const ChapterDetail: React.FC = () => {
                   </Link>
                   <span className="text-slate-600">•</span>
                   <span className="text-slate-400">
-                    {chapter.publishedAt ? new Date(chapter.publishedAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', month: 'long', day: 'numeric' 
+                    {chapter.publishedAt ? new Date(chapter.publishedAt).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'long', day: 'numeric'
                     }) : 'Draft'}
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
-                <button 
+                <button
                   onClick={toggleReadAloud}
-                  className={`inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isReadingAloud 
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20' 
+                  className={`inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isReadingAloud
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20'
                       : 'bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     {isReadingAloud ? (
@@ -182,7 +181,7 @@ const ChapterDetail: React.FC = () => {
                   </svg>
                   {isReadingAloud ? 'Stop Audio' : 'Read Aloud'}
                 </button>
-                
+
                 <button className="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10 transition-all">
                   <svg className="h-4 w-4 mr-2 text-rose-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
@@ -192,41 +191,39 @@ const ChapterDetail: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="px-6 py-8">
             <div className="prose prose-invert prose-lg max-w-none">
-              <SynchronizedReader 
-                content={chapter.content || '<p>No content available.</p>'} 
-                audioUrl={chapter.audioFile ? `${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001'}/uploads/${chapter.audioFile}` : undefined}
+              <SynchronizedReader
+                content={chapter.content || '<p>No content available.</p>'}
+                audioUrl={chapter.audioFile ? `${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${chapter.audioFile}` : undefined}
                 isPlaying={isReadingAloud}
               />
             </div>
           </div>
-          
+
           <div className="px-6 py-4 border-t border-slate-800 flex justify-between">
-            <button 
+            <button
               onClick={goToPrevious}
               disabled={!hasPrevious}
-              className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                hasPrevious 
-                  ? 'bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10' 
+              className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${hasPrevious
+                  ? 'bg-white/5 text-slate-300 border border-slate-700 hover:bg-white/10'
                   : 'bg-white/5 text-slate-600 border border-slate-800 cursor-not-allowed'
-              }`}
+                }`}
             >
               <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Previous
             </button>
-            
-            <button 
+
+            <button
               onClick={goToNext}
               disabled={!hasNext}
-              className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                hasNext 
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20' 
+              className={`inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${hasNext
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/20'
                   : 'bg-white/5 text-slate-600 border border-slate-800 cursor-not-allowed'
-              }`}
+                }`}
             >
               Next
               <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,7 +238,7 @@ const ChapterDetail: React.FC = () => {
             <h2 className="text-lg font-semibold text-white">Comments</h2>
             <p className="text-sm text-slate-500">Join the discussion about this chapter.</p>
           </div>
-          
+
           <div className="px-6 py-5">
             <div className="flex gap-4">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold flex-shrink-0">
@@ -261,7 +258,7 @@ const ChapterDetail: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="border-t border-slate-800 px-6 py-5">
             <div className="text-center py-8">
               <div className="text-4xl mb-3">💬</div>
@@ -280,9 +277,8 @@ const ChapterDetail: React.FC = () => {
                 <Link
                   key={ch._id || ch.id}
                   to={`/story/${storyId}/chapter/${ch.chapterNumber || idx + 1}`}
-                  className={`block px-6 py-4 hover:bg-white/5 transition-colors ${
-                    (ch.chapterNumber || idx + 1) === parseInt(chapterNumber || '1') ? 'bg-orange-500/10 border-l-2 border-orange-500' : ''
-                  }`}
+                  className={`block px-6 py-4 hover:bg-white/5 transition-colors ${(ch.chapterNumber || idx + 1) === parseInt(chapterNumber || '1') ? 'bg-orange-500/10 border-l-2 border-orange-500' : ''
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>

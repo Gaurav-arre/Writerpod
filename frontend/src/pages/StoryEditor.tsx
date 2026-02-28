@@ -7,7 +7,7 @@ export function StoryEditor() {
   const { storyId, episodeId } = useParams();
   const navigate = useNavigate();
 
-  
+
   const [story, setStory] = useState<any>(null);
   const [episodes, setEpisodes] = useState<any[]>([]);
   const [currentEpisode, setCurrentEpisode] = useState<any>(null);
@@ -37,27 +37,27 @@ export function StoryEditor() {
         chaptersAPI.getChaptersByStory(storyId)
       ]);
       setStory(storyRes.data.story);
-        const fetchedEpisodes = (chaptersRes.data as any).chapters || (chaptersRes.data as any).data || [];
-        setEpisodes(fetchedEpisodes);
-        
-        if (episodeId) {
-          const ep = fetchedEpisodes.find((e: any) => e._id === episodeId);
-          if (ep) {
-            setCurrentEpisode(ep);
-            setTitle(ep.title);
-            setContent(ep.content);
-            setPublishFormat((ep as any).publishFormat || 'both');
-          }
-        } else if (fetchedEpisodes.length > 0) {
-          // If no episodeId is provided but episodes exist, select the first one
-          const ep = fetchedEpisodes[0];
+      const fetchedEpisodes = (chaptersRes.data as any).chapters || (chaptersRes.data as any).data || [];
+      setEpisodes(fetchedEpisodes);
+
+      if (episodeId) {
+        const ep = fetchedEpisodes.find((e: any) => e._id === episodeId);
+        if (ep) {
           setCurrentEpisode(ep);
           setTitle(ep.title);
           setContent(ep.content);
           setPublishFormat((ep as any).publishFormat || 'both');
-          // Update URL to include the episode ID without full refresh
-          window.history.replaceState(null, '', `/studio/story/${storyId}/episode/${ep._id}`);
         }
+      } else if (fetchedEpisodes.length > 0) {
+        // If no episodeId is provided but episodes exist, select the first one
+        const ep = fetchedEpisodes[0];
+        setCurrentEpisode(ep);
+        setTitle(ep.title);
+        setContent(ep.content);
+        setPublishFormat((ep as any).publishFormat || 'both');
+        // Update URL to include the episode ID without full refresh
+        window.history.replaceState(null, '', `/studio/story/${storyId}/episode/${ep._id}`);
+      }
     } catch (err) {
       console.error('Error:', err);
       toast.error('Failed to load story data');
@@ -79,7 +79,7 @@ export function StoryEditor() {
       toast.error('Please enter an episode title');
       return;
     }
-    
+
     setSaving(true);
     const savePromise = (async () => {
       if (currentEpisode) {
@@ -90,15 +90,15 @@ export function StoryEditor() {
       } else {
         const { data: numData } = await chaptersAPI.getNextChapterNumber(storyId);
         const nextNum = numData.nextNumber;
-        
-        const res = await chaptersAPI.createChapter({ 
-          title, 
-          content, 
-          story: storyId, 
-          chapterNumber: nextNum, 
-          status 
+
+        const res = await chaptersAPI.createChapter({
+          title,
+          content,
+          story: storyId,
+          chapterNumber: nextNum,
+          status
         } as any);
-        
+
         setCurrentEpisode(res.data.chapter);
         setEpisodes(prev => [...prev, res.data.chapter]);
         // Update URL without full refresh to include the new episode ID
@@ -172,7 +172,7 @@ export function StoryEditor() {
             <h2 className="font-bold text-white truncate">{story?.title}</h2>
             <p className="text-xs text-slate-500 capitalize">{story?.genre} • {story?.status}</p>
           </div>
-          
+
           <div className="p-4 border-b border-white/5">
             <button
               onClick={createNewEpisode}
@@ -181,7 +181,7 @@ export function StoryEditor() {
               + New Episode
             </button>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-2">
             <div className="text-xs text-slate-500 uppercase tracking-wider px-2 mb-2">Episodes</div>
             {episodes.length === 0 ? (
@@ -192,11 +192,10 @@ export function StoryEditor() {
                   <button
                     key={ep._id}
                     onClick={() => selectEpisode(ep)}
-                    className={`w-full text-left p-3 rounded-lg transition-all ${
-                      currentEpisode?._id === ep._id
+                    className={`w-full text-left p-3 rounded-lg transition-all ${currentEpisode?._id === ep._id
                         ? 'bg-orange-500/20 border border-orange-500/30'
                         : 'hover:bg-white/5 border border-transparent'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-slate-500">Episode {ep.chapterNumber}</span>
@@ -223,24 +222,23 @@ export function StoryEditor() {
                   className="text-xl font-bold bg-transparent border-none text-white placeholder-slate-600 focus:outline-none focus:ring-0 w-96"
                 />
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 bg-white/5 rounded-lg p-1">
                   {(['text', 'audio', 'both'] as const).map((fmt) => (
                     <button
                       key={fmt}
                       onClick={() => setPublishFormat(fmt)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                        publishFormat === fmt
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${publishFormat === fmt
                           ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
                           : 'text-slate-400 hover:text-white'
-                      }`}
+                        }`}
                     >
                       {fmt === 'text' ? '📖 Text' : fmt === 'audio' ? '🎧 Audio' : '📖🎧 Both'}
                     </button>
                   ))}
                 </div>
-                
+
                 <button
                   onClick={() => setShowVoicePanel(!showVoicePanel)}
                   className={`p-2.5 rounded-lg transition-all ${showVoicePanel ? 'bg-orange-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
@@ -249,7 +247,7 @@ export function StoryEditor() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                   </svg>
                 </button>
-                
+
                 <button
                   onClick={() => setShowAIAssistant(!showAIAssistant)}
                   className={`p-2.5 rounded-lg transition-all ${showAIAssistant ? 'bg-violet-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
@@ -258,7 +256,7 @@ export function StoryEditor() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </button>
-                
+
                 <button
                   onClick={() => setShowPreview(!showPreview)}
                   className={`p-2.5 rounded-lg transition-all ${showPreview ? 'bg-cyan-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
@@ -268,9 +266,9 @@ export function StoryEditor() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </button>
-                
+
                 <div className="h-6 w-px bg-white/10" />
-                
+
                 <button
                   onClick={() => handleSave('draft')}
                   disabled={saving}
@@ -278,7 +276,7 @@ export function StoryEditor() {
                 >
                   {saving ? 'Saving...' : 'Save Draft'}
                 </button>
-                
+
                 <button
                   onClick={() => handleSave('published')}
                   disabled={saving || !title || !content}
@@ -300,36 +298,36 @@ export function StoryEditor() {
                   <span>•</span>
                   <span>{listenTime} min listen</span>
                 </div>
-                
-              <div className="mb-4 flex gap-2 flex-wrap">
-                {[
-                  { icon: 'B', cmd: 'bold', label: 'Bold' },
-                  { icon: 'I', cmd: 'italic', label: 'Italic' },
-                  { icon: 'U', cmd: 'underline', label: 'Underline' },
-                  { icon: '—', cmd: 'insertHorizontalRule', label: 'Divider' },
-                  { icon: '"', cmd: 'formatBlock', val: 'blockquote', label: 'Quote' },
-                  { icon: 'H1', cmd: 'formatBlock', val: 'h1', label: 'Heading 1' },
-                  { icon: 'H2', cmd: 'formatBlock', val: 'h2', label: 'Heading 2' },
-                ].map((btn) => (
-                  <button
-                    key={btn.cmd + (btn.val || '')}
-                    onClick={() => document.execCommand(btn.cmd, false, btn.val)}
-                    className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded text-slate-400 hover:text-white text-sm font-medium transition-colors"
-                    title={btn.label}
-                  >
-                    {btn.icon}
-                  </button>
-                ))}
-              </div>
-              
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Start writing your episode here..."
-                className="min-h-[60vh] w-full bg-white/5 border border-white/10 rounded-xl p-6 text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none"
-                style={{ fontFamily: 'Georgia, serif', fontSize: '18px', lineHeight: '1.8' }}
-              />
-                
+
+                <div className="mb-4 flex gap-2 flex-wrap">
+                  {[
+                    { icon: 'B', cmd: 'bold', label: 'Bold' },
+                    { icon: 'I', cmd: 'italic', label: 'Italic' },
+                    { icon: 'U', cmd: 'underline', label: 'Underline' },
+                    { icon: '—', cmd: 'insertHorizontalRule', label: 'Divider' },
+                    { icon: '"', cmd: 'formatBlock', val: 'blockquote', label: 'Quote' },
+                    { icon: 'H1', cmd: 'formatBlock', val: 'h1', label: 'Heading 1' },
+                    { icon: 'H2', cmd: 'formatBlock', val: 'h2', label: 'Heading 2' },
+                  ].map((btn) => (
+                    <button
+                      key={btn.cmd + (btn.val || '')}
+                      onClick={() => document.execCommand(btn.cmd, false, btn.val)}
+                      className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                      title={btn.label}
+                    >
+                      {btn.icon}
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Start writing your episode here..."
+                  className="min-h-[60vh] w-full bg-white/5 border border-white/10 rounded-xl p-6 text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none"
+                  style={{ fontFamily: 'Georgia, serif', fontSize: '18px', lineHeight: '1.8' }}
+                />
+
                 <div className="mt-4 text-xs text-slate-600">
                   Tip: Use quotes for dialogue. Add [PAUSE] for audio pauses. Mark character names in CAPS for character voices.
                 </div>
@@ -344,7 +342,7 @@ export function StoryEditor() {
                 onAudioGenerated={setGeneratedAudioUrl}
               />
             )}
-            
+
             {showAIAssistant && (
               <AIAssistantPanel
                 content={content}
@@ -352,7 +350,7 @@ export function StoryEditor() {
                 onClose={() => setShowAIAssistant(false)}
               />
             )}
-            
+
             {showPreview && (
               <PreviewPanel
                 title={title}
@@ -415,7 +413,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
         return;
       }
       const res = await ttsAPI.generateAudio(text, { voice: selectedVoice, speed, stability });
-      const fullUrl = `http://localhost:5001${res.data.audioUrl}`;
+      const fullUrl = res.data.audioUrl;
       setAudioUrl(fullUrl);
       onAudioGenerated(fullUrl);
     } catch (err: any) {
@@ -438,7 +436,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
           </svg>
         </button>
       </div>
-      
+
       <div className="p-4 space-y-6">
         <div>
           <label className="block text-sm text-slate-400 mb-2">Narrator Voice</label>
@@ -456,7 +454,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
             )}
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm text-slate-400 mb-2">Speed: {speed.toFixed(1)}x</label>
           <input
@@ -469,7 +467,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
             className="w-full accent-orange-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm text-slate-400 mb-2">Voice Stability: {Math.round(stability * 100)}%</label>
           <input
@@ -482,7 +480,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
             className="w-full accent-orange-500"
           />
         </div>
-        
+
         <div className="border-t border-white/5 pt-4">
           <label className="block text-sm text-slate-400 mb-2">Background Music</label>
           <select
@@ -499,7 +497,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
             )}
           </select>
         </div>
-        
+
         {selectedMusic !== 'none' && (
           <div>
             <label className="block text-sm text-slate-400 mb-2">Music Volume: {Math.round(musicVolume * 100)}%</label>
@@ -520,7 +518,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
             {error}
           </div>
         )}
-        
+
         <button
           onClick={generateAudio}
           disabled={generating || !content}
@@ -535,7 +533,7 @@ function VoicePanel({ episodeId, content, onClose, onAudioGenerated }: { episode
             'Generate Audio'
           )}
         </button>
-        
+
         {audioUrl && (
           <div className="bg-white/5 rounded-lg p-4">
             <div className="text-xs text-slate-400 mb-2">Preview</div>
@@ -590,7 +588,7 @@ function AIAssistantPanel({ content, onInsert, onClose }: { content: string; onI
           </svg>
         </button>
       </div>
-      
+
       <div className="p-4 space-y-4">
         <div>
           <label className="block text-sm text-slate-400 mb-2">Quick Actions</label>
@@ -606,7 +604,7 @@ function AIAssistantPanel({ content, onInsert, onClose }: { content: string; onI
             ))}
           </div>
         </div>
-        
+
         <div>
           <label className="block text-sm text-slate-400 mb-2">Custom Prompt</label>
           <textarea
@@ -616,7 +614,7 @@ function AIAssistantPanel({ content, onInsert, onClose }: { content: string; onI
             className="w-full h-24 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 resize-none"
           />
         </div>
-        
+
         <button
           onClick={generateSuggestion}
           disabled={!prompt || loading}
@@ -645,7 +643,7 @@ function AIAssistantPanel({ content, onInsert, onClose }: { content: string; onI
             ))}
           </div>
         )}
-        
+
         <div className="text-xs text-slate-500 text-center">
           AI suggestions are tools to assist your creativity, not replace it.
         </div>
@@ -656,7 +654,7 @@ function AIAssistantPanel({ content, onInsert, onClose }: { content: string; onI
 
 function PreviewPanel({ title, content, publishFormat, audioUrl, onClose }: { title: string; content: string; publishFormat: string; audioUrl: string; onClose: () => void }) {
   const [mode, setMode] = useState<'read' | 'listen' | 'both'>('read');
-  
+
   return (
     <aside className="w-96 bg-black/30 border-l border-white/5 flex flex-col overflow-y-auto">
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
@@ -669,26 +667,25 @@ function PreviewPanel({ title, content, publishFormat, audioUrl, onClose }: { ti
           </svg>
         </button>
       </div>
-      
+
       <div className="p-4 border-b border-white/5">
         <div className="flex bg-white/5 rounded-lg p-1">
           {(['read', 'listen', 'both'] as const).map((m) => (
             <button
               key={m}
               onClick={() => setMode(m)}
-              className={`flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all capitalize ${
-                mode === m ? 'bg-cyan-500 text-white' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`flex-1 px-3 py-2 rounded-md text-xs font-medium transition-all capitalize ${mode === m ? 'bg-cyan-500 text-white' : 'text-slate-400 hover:text-white'
+                }`}
             >
               {m}
             </button>
           ))}
         </div>
       </div>
-      
+
       <div className="flex-1 p-4 overflow-y-auto">
         <h4 className="text-lg font-semibold text-white mb-4">{title || 'Untitled Episode'}</h4>
-        
+
         {mode === 'read' ? (
           <div
             className="prose prose-invert prose-sm max-w-none"

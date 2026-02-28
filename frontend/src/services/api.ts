@@ -1,13 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
-import { 
-  User, 
-  Story, 
-  Chapter, 
-  LoginForm, 
-  RegisterForm, 
-  StoryForm, 
-  ChapterForm, 
-  StoryFilters, 
+import {
+  User,
+  Story,
+  Chapter,
+  LoginForm,
+  RegisterForm,
+  StoryForm,
+  ChapterForm,
+  StoryFilters,
   UserFilters,
   Voice,
   BackgroundMusic,
@@ -22,7 +22,7 @@ import {
 
 // Create axios instance
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
   timeout: 30000,
 });
 
@@ -44,7 +44,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config.url.endsWith('/auth/login')) {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -55,19 +55,19 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: (data: LoginForm): Promise<AxiosResponse<{ message: string; token: string; user: User }>> => 
+  login: (data: LoginForm): Promise<AxiosResponse<{ message: string; token: string; user: User }>> =>
     api.post('/auth/login', data),
-  
-  register: (data: RegisterForm): Promise<AxiosResponse<{ message: string; token: string; user: User }>> => 
+
+  register: (data: RegisterForm): Promise<AxiosResponse<{ message: string; token: string; user: User }>> =>
     api.post('/auth/register', data),
-  
-  getMe: (): Promise<AxiosResponse<{ user: User }>> => 
+
+  getMe: (): Promise<AxiosResponse<{ user: User }>> =>
     api.get('/auth/me'),
-  
-  updateProfile: (data: Partial<User>): Promise<AxiosResponse<{ message: string; user: User }>> => 
+
+  updateProfile: (data: Partial<User>): Promise<AxiosResponse<{ message: string; user: User }>> =>
     api.put('/auth/profile', data),
-  
-  changePassword: (data: { currentPassword: string; newPassword: string }): Promise<AxiosResponse<{ message: string }>> => 
+
+  changePassword: (data: { currentPassword: string; newPassword: string }): Promise<AxiosResponse<{ message: string }>> =>
     api.post('/auth/change-password', data),
 };
 
@@ -84,56 +84,56 @@ export const storiesAPI = {
     }
     return api.get(`/stories?${params.toString()}`);
   },
-  
-  getStory: (id: string): Promise<AxiosResponse<{ story: Story }>> => 
+
+  getStory: (id: string): Promise<AxiosResponse<{ story: Story }>> =>
     api.get(`/stories/${id}`),
-  
-  createStory: (data: StoryForm): Promise<AxiosResponse<{ message: string; story: Story }>> => 
+
+  createStory: (data: StoryForm): Promise<AxiosResponse<{ message: string; story: Story }>> =>
     api.post('/stories', data),
-  
-  updateStory: (id: string, data: Partial<StoryForm>): Promise<AxiosResponse<{ message: string; story: Story }>> => 
+
+  updateStory: (id: string, data: Partial<StoryForm>): Promise<AxiosResponse<{ message: string; story: Story }>> =>
     api.put(`/stories/${id}`, data),
-  
-  deleteStory: (id: string): Promise<AxiosResponse<{ message: string }>> => 
+
+  deleteStory: (id: string): Promise<AxiosResponse<{ message: string }>> =>
     api.delete(`/stories/${id}`),
-  
-  likeStory: (id: string): Promise<AxiosResponse<{ message: string; isLiked: boolean; totalLikes: number }>> => 
+
+  likeStory: (id: string): Promise<AxiosResponse<{ message: string; isLiked: boolean; totalLikes: number }>> =>
     api.post(`/stories/${id}/like`),
-  
-  bookmarkStory: (id: string): Promise<AxiosResponse<{ message: string; isBookmarked: boolean }>> => 
+
+  bookmarkStory: (id: string): Promise<AxiosResponse<{ message: string; isBookmarked: boolean }>> =>
     api.post(`/stories/${id}/bookmark`),
-  
-  rateStory: (id: string, rating: number): Promise<AxiosResponse<{ message: string; averageRating: number; totalRatings: number }>> => 
+
+  rateStory: (id: string, rating: number): Promise<AxiosResponse<{ message: string; averageRating: number; totalRatings: number }>> =>
     api.post(`/stories/${id}/rate`, { rating }),
 };
 
 // Chapters API
 export const chaptersAPI = {
-  getChaptersByStory: (storyId: string, page?: number): Promise<AxiosResponse<PaginatedResponse<Chapter>>> => 
+  getChaptersByStory: (storyId: string, page?: number): Promise<AxiosResponse<PaginatedResponse<Chapter>>> =>
     api.get(`/chapters/story/${storyId}?page=${page || 1}`),
-  
-  getNextChapterNumber: (storyId: string): Promise<AxiosResponse<{ nextNumber: number }>> => 
+
+  getNextChapterNumber: (storyId: string): Promise<AxiosResponse<{ nextNumber: number }>> =>
     api.get(`/chapters/story/${storyId}/next-number`),
-  
-  getChapter: (id: string): Promise<AxiosResponse<{ chapter: Chapter }>> => 
+
+  getChapter: (id: string): Promise<AxiosResponse<{ chapter: Chapter }>> =>
     api.get(`/chapters/${id}`),
-  
-  createChapter: (data: ChapterForm & { story: string }): Promise<AxiosResponse<{ message: string; chapter: Chapter }>> => 
+
+  createChapter: (data: ChapterForm & { story: string }): Promise<AxiosResponse<{ message: string; chapter: Chapter }>> =>
     api.post('/chapters', data),
-  
-  updateChapter: (id: string, data: Partial<ChapterForm>): Promise<AxiosResponse<{ message: string; chapter: Chapter }>> => 
+
+  updateChapter: (id: string, data: Partial<ChapterForm>): Promise<AxiosResponse<{ message: string; chapter: Chapter }>> =>
     api.put(`/chapters/${id}`, data),
-  
-  deleteChapter: (id: string): Promise<AxiosResponse<{ message: string }>> => 
+
+  deleteChapter: (id: string): Promise<AxiosResponse<{ message: string }>> =>
     api.delete(`/chapters/${id}`),
-  
-  likeChapter: (id: string): Promise<AxiosResponse<{ message: string; isLiked: boolean; totalLikes: number }>> => 
+
+  likeChapter: (id: string): Promise<AxiosResponse<{ message: string; isLiked: boolean; totalLikes: number }>> =>
     api.post(`/chapters/${id}/like`),
-  
-  addComment: (id: string, content: string): Promise<AxiosResponse<{ message: string; comment: any }>> => 
+
+  addComment: (id: string, content: string): Promise<AxiosResponse<{ message: string; comment: any }>> =>
     api.post(`/chapters/${id}/comment`, { content }),
-  
-  deleteComment: (chapterId: string, commentId: string): Promise<AxiosResponse<{ message: string }>> => 
+
+  deleteComment: (chapterId: string, commentId: string): Promise<AxiosResponse<{ message: string }>> =>
     api.delete(`/chapters/${chapterId}/comment/${commentId}`),
 };
 
@@ -150,77 +150,77 @@ export const usersAPI = {
     }
     return api.get(`/users?${params.toString()}`);
   },
-  
-  getUser: (username: string): Promise<AxiosResponse<{ user: User & { stories: Story[] } }>> => 
+
+  getUser: (username: string): Promise<AxiosResponse<{ user: User & { stories: Story[] } }>> =>
     api.get(`/users/${username}`),
-  
-  followUser: (id: string): Promise<AxiosResponse<{ message: string; isFollowing: boolean }>> => 
+
+  followUser: (id: string): Promise<AxiosResponse<{ message: string; isFollowing: boolean }>> =>
     api.post(`/users/${id}/follow`),
-  
-  getUserStories: (id: string, page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> => 
+
+  getUserStories: (id: string, page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> =>
     api.get(`/users/${id}/stories?page=${page || 1}`),
-  
-  getFollowers: (id: string, page?: number): Promise<AxiosResponse<PaginatedResponse<User>>> => 
+
+  getFollowers: (id: string, page?: number): Promise<AxiosResponse<PaginatedResponse<User>>> =>
     api.get(`/users/${id}/followers?page=${page || 1}`),
-  
-  getFollowing: (id: string, page?: number): Promise<AxiosResponse<PaginatedResponse<User>>> => 
+
+  getFollowing: (id: string, page?: number): Promise<AxiosResponse<PaginatedResponse<User>>> =>
     api.get(`/users/${id}/following?page=${page || 1}`),
-  
-  getBookmarks: (page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> => 
+
+  getBookmarks: (page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> =>
     api.get(`/users/me/bookmarks?page=${page || 1}`),
-  
-  getMyStories: (page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> => 
+
+  getMyStories: (page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> =>
     api.get(`/users/me/stories?page=${page || 1}`),
-  
-  getFeed: (page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> => 
+
+  getFeed: (page?: number): Promise<AxiosResponse<PaginatedResponse<Story>>> =>
     api.get(`/users/me/feed?page=${page || 1}`),
 };
 
 // Text-to-Speech API
 export const ttsAPI = {
-  generateAudio: (text: string, options?: { voice?: string; speed?: number; pitch?: number; stability?: number; clarity?: number }): Promise<AxiosResponse<{ message: string; audioFile: string; audioUrl: string; settings: any }>> => 
+  generateAudio: (text: string, options?: { voice?: string; speed?: number; pitch?: number; stability?: number; clarity?: number }): Promise<AxiosResponse<{ message: string; audioFile: string; audioUrl: string; settings: any }>> =>
     api.post('/tts/generate', { text, ...options }),
-  
-  generateChapterAudio: (chapterId: string, options?: { voice?: string; speed?: number; pitch?: number; stability?: number; clarity?: number; saveVersion?: boolean }): Promise<AxiosResponse<{ message: string; chapter: any }>> => 
+
+  generateChapterAudio: (chapterId: string, options?: { voice?: string; speed?: number; pitch?: number; stability?: number; clarity?: number; saveVersion?: boolean }): Promise<AxiosResponse<{ message: string; chapter: any }>> =>
     api.post(`/tts/chapter/${chapterId}`, options),
-  
+
   updateChapterSettings: (chapterId: string, settings: { audioSettings?: any; backgroundMusic?: any; characterVoices?: any[]; soundEffects?: any[] }): Promise<AxiosResponse<any>> =>
     api.put(`/tts/chapter/${chapterId}/settings`, settings),
-  
+
   getChapterVersions: (chapterId: string): Promise<AxiosResponse<{ currentAudio: any; versionHistory: any[] }>> =>
     api.get(`/tts/chapter/${chapterId}/versions`),
-  
+
   restoreChapterVersion: (chapterId: string, version: number): Promise<AxiosResponse<any>> =>
     api.post(`/tts/chapter/${chapterId}/restore/${version}`),
-  
-  getVoices: (): Promise<AxiosResponse<{ voices: Voice[]; groupedVoices: any; defaultVoice: string }>> => 
+
+  getVoices: (): Promise<AxiosResponse<{ voices: Voice[]; groupedVoices: any; defaultVoice: string }>> =>
     api.get('/tts/voices'),
-  
-  getBackgroundMusic: (): Promise<AxiosResponse<{ backgroundMusic: BackgroundMusic[]; groupedMusic: any; defaultMusic: string }>> => 
+
+  getBackgroundMusic: (): Promise<AxiosResponse<{ backgroundMusic: BackgroundMusic[]; groupedMusic: any; defaultMusic: string }>> =>
     api.get('/tts/background-music'),
-  
+
   getSoundEffects: (): Promise<AxiosResponse<{ soundEffects: any[]; groupedEffects: any }>> =>
     api.get('/tts/sound-effects'),
-  
-  deleteChapterAudio: (chapterId: string): Promise<AxiosResponse<{ message: string }>> => 
+
+  deleteChapterAudio: (chapterId: string): Promise<AxiosResponse<{ message: string }>> =>
     api.delete(`/tts/chapter/${chapterId}/audio`),
 };
 
 // Analytics API
 export const analyticsAPI = {
-  getDashboardAnalytics: (): Promise<AxiosResponse<DashboardAnalytics>> => 
+  getDashboardAnalytics: (): Promise<AxiosResponse<DashboardAnalytics>> =>
     api.get('/analytics/dashboard'),
-  
-  getDashboard: (): Promise<AxiosResponse<DashboardAnalytics>> => 
+
+  getDashboard: (): Promise<AxiosResponse<DashboardAnalytics>> =>
     api.get('/analytics/dashboard'),
-  
-  getStoryAnalytics: (storyId: string): Promise<AxiosResponse<StoryAnalytics>> => 
+
+  getStoryAnalytics: (storyId: string): Promise<AxiosResponse<StoryAnalytics>> =>
     api.get(`/analytics/story/${storyId}`),
-  
-  getChapterAnalytics: (chapterId: string): Promise<AxiosResponse<any>> => 
+
+  getChapterAnalytics: (chapterId: string): Promise<AxiosResponse<any>> =>
     api.get(`/analytics/chapter/${chapterId}`),
-  
-  getAudienceAnalytics: (): Promise<AxiosResponse<any>> => 
+
+  getAudienceAnalytics: (): Promise<AxiosResponse<any>> =>
     api.get('/analytics/audience'),
 };
 
@@ -237,23 +237,23 @@ export const publicationsAPI = {
     }
     return api.get(`/publications?${params.toString()}`);
   },
-  
-  getPublication: (id: string): Promise<AxiosResponse<any>> => 
+
+  getPublication: (id: string): Promise<AxiosResponse<any>> =>
     api.get(`/publications/${id}`),
-  
-  createPublication: (data: Partial<Publication>): Promise<AxiosResponse<any>> => 
+
+  createPublication: (data: Partial<Publication>): Promise<AxiosResponse<any>> =>
     api.post('/publications', data),
-  
-  updatePublication: (id: string, data: Partial<Publication>): Promise<AxiosResponse<any>> => 
+
+  updatePublication: (id: string, data: Partial<Publication>): Promise<AxiosResponse<any>> =>
     api.put(`/publications/${id}`, data),
-  
-  deletePublication: (id: string): Promise<AxiosResponse<any>> => 
+
+  deletePublication: (id: string): Promise<AxiosResponse<any>> =>
     api.delete(`/publications/${id}`),
-  
-  subscribe: (id: string): Promise<AxiosResponse<any>> => 
+
+  subscribe: (id: string): Promise<AxiosResponse<any>> =>
     api.post(`/publications/${id}/subscribe`),
-  
-  unsubscribe: (id: string): Promise<AxiosResponse<any>> => 
+
+  unsubscribe: (id: string): Promise<AxiosResponse<any>> =>
     api.post(`/publications/${id}/unsubscribe`),
 };
 
@@ -270,20 +270,20 @@ export const chatsAPI = {
     }
     return api.get(`/chats/publication/${publicationId}?${params.toString()}`);
   },
-  
-  getChat: (id: string): Promise<AxiosResponse<any>> => 
+
+  getChat: (id: string): Promise<AxiosResponse<any>> =>
     api.get(`/chats/${id}`),
-  
-  createChat: (data: Partial<Chat>): Promise<AxiosResponse<any>> => 
+
+  createChat: (data: Partial<Chat>): Promise<AxiosResponse<any>> =>
     api.post('/chats', data),
-  
-  updateChat: (id: string, data: Partial<Chat>): Promise<AxiosResponse<any>> => 
+
+  updateChat: (id: string, data: Partial<Chat>): Promise<AxiosResponse<any>> =>
     api.put(`/chats/${id}`, data),
-  
-  deleteChat: (id: string): Promise<AxiosResponse<any>> => 
+
+  deleteChat: (id: string): Promise<AxiosResponse<any>> =>
     api.delete(`/chats/${id}`),
-  
-  likeChat: (id: string): Promise<AxiosResponse<any>> => 
+
+  likeChat: (id: string): Promise<AxiosResponse<any>> =>
     api.post(`/chats/${id}/like`),
 };
 
@@ -300,17 +300,17 @@ export const messagesAPI = {
     }
     return api.get(`/messages/chat/${chatId}?${params.toString()}`);
   },
-  
-  createMessage: (data: Partial<Message>): Promise<AxiosResponse<any>> => 
+
+  createMessage: (data: Partial<Message>): Promise<AxiosResponse<any>> =>
     api.post('/messages', data),
-  
-  updateMessage: (id: string, data: Partial<Message>): Promise<AxiosResponse<any>> => 
+
+  updateMessage: (id: string, data: Partial<Message>): Promise<AxiosResponse<any>> =>
     api.put(`/messages/${id}`, data),
-  
-  deleteMessage: (id: string): Promise<AxiosResponse<any>> => 
+
+  deleteMessage: (id: string): Promise<AxiosResponse<any>> =>
     api.delete(`/messages/${id}`),
-  
-  likeMessage: (id: string): Promise<AxiosResponse<any>> => 
+
+  likeMessage: (id: string): Promise<AxiosResponse<any>> =>
     api.post(`/messages/${id}/like`),
 };
 
@@ -327,7 +327,7 @@ export const notesAPI = {
     }
     return api.get(`/notes?${params.toString()}`);
   },
-  
+
   getNoteFeed: (filters?: { page?: number; limit?: number }): Promise<AxiosResponse<any>> => {
     const params = new URLSearchParams();
     if (filters) {
@@ -339,23 +339,23 @@ export const notesAPI = {
     }
     return api.get(`/notes/feed?${params.toString()}`);
   },
-  
-  getNote: (id: string): Promise<AxiosResponse<any>> => 
+
+  getNote: (id: string): Promise<AxiosResponse<any>> =>
     api.get(`/notes/${id}`),
-  
-  createNote: (data: Partial<any>): Promise<AxiosResponse<any>> => 
+
+  createNote: (data: Partial<any>): Promise<AxiosResponse<any>> =>
     api.post('/notes', data),
-  
-  updateNote: (id: string, data: Partial<any>): Promise<AxiosResponse<any>> => 
+
+  updateNote: (id: string, data: Partial<any>): Promise<AxiosResponse<any>> =>
     api.put(`/notes/${id}`, data),
-  
-  deleteNote: (id: string): Promise<AxiosResponse<any>> => 
+
+  deleteNote: (id: string): Promise<AxiosResponse<any>> =>
     api.delete(`/notes/${id}`),
-  
-  likeNote: (id: string): Promise<AxiosResponse<any>> => 
+
+  likeNote: (id: string): Promise<AxiosResponse<any>> =>
     api.post(`/notes/${id}/like`),
-  
-  repostNote: (id: string, data: { content?: string }): Promise<AxiosResponse<any>> => 
+
+  repostNote: (id: string, data: { content?: string }): Promise<AxiosResponse<any>> =>
     api.post(`/notes/${id}/repost`, data),
 };
 

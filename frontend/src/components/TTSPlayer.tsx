@@ -13,11 +13,11 @@ interface TTSPlayerProps {
   };
 }
 
-const TTSPlayer: React.FC<TTSPlayerProps> = ({ 
-  chapterId, 
-  content, 
+const TTSPlayer: React.FC<TTSPlayerProps> = ({
+  chapterId,
+  content,
   initialAudioFile,
-  initialAudioSettings 
+  initialAudioSettings
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +27,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
   const [pitch, setPitch] = useState(initialAudioSettings?.pitch || 1.0);
   const [audioFile, setAudioFile] = useState(initialAudioFile || '');
   const [error, setError] = useState('');
-  
+
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -47,14 +47,14 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
   const generateAudio = async () => {
     setIsLoading(true);
     setError('');
-    
+
     try {
       const response = await ttsAPI.generateChapterAudio(chapterId, {
         voice: selectedVoice,
         speed,
         pitch
       });
-      
+
       setAudioFile(response.data.chapter.audioFile);
       setIsPlaying(false);
     } catch (err) {
@@ -67,7 +67,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
 
   const togglePlayPause = () => {
     if (!audioRef.current) return;
-    
+
     if (isPlaying) {
       audioRef.current.pause();
     } else {
@@ -88,13 +88,13 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-medium text-gray-900 mb-4">Text-to-Speech</h3>
-      
+
       {error && (
         <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
           {error}
         </div>
       )}
-      
+
       <div className="space-y-4">
         {/* Voice Selection */}
         <div>
@@ -114,7 +114,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
             ))}
           </select>
         </div>
-        
+
         {/* Speed Control */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -135,7 +135,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
             <span>Faster</span>
           </div>
         </div>
-        
+
         {/* Pitch Control */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -156,7 +156,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
             <span>Higher</span>
           </div>
         </div>
-        
+
         {/* Controls */}
         <div className="flex flex-wrap gap-3 pt-2">
           {!audioFile ? (
@@ -200,7 +200,7 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
                   </>
                 )}
               </button>
-              
+
               <button
                 onClick={generateAudio}
                 disabled={isLoading}
@@ -222,12 +222,12 @@ const TTSPlayer: React.FC<TTSPlayerProps> = ({
           )}
         </div>
       </div>
-      
+
       {/* Hidden audio element */}
       {audioFile && (
         <audio
           ref={audioRef}
-          src={`${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001'}/uploads/${audioFile}`}
+          src={`${process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${audioFile}`}
           onEnded={handleAudioEnded}
           onError={handleAudioError}
           className="hidden"

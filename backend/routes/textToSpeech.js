@@ -54,7 +54,9 @@ const SOUND_EFFECTS_LIBRARY = [
   { id: 'glass-shatter', name: 'Shattering Glass', category: 'dramatic' }
 ];
 
-const uploadsDir = path.join(__dirname, '../uploads');
+const uploadsDir = process.env.NODE_ENV === 'production'
+  ? '/tmp'
+  : path.join(__dirname, '../uploads');
 
 const ensureUploadsDir = async () => {
   try {
@@ -66,10 +68,10 @@ const ensureUploadsDir = async () => {
 
 const generateDemoAudio = async () => {
   await ensureUploadsDir();
-  
+
   const audioFileName = `tts_demo_${Date.now()}_${Math.random().toString(36).substring(7)}.mp3`;
   const audioPath = path.join(uploadsDir, audioFileName);
-  
+
   const silentMp3 = Buffer.from([
     0xFF, 0xFB, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -78,12 +80,12 @@ const generateDemoAudio = async () => {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0xFF, 0xFB, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   ]);
-  
+
   const frames = [];
   for (let i = 0; i < 100; i++) {
     frames.push(silentMp3);
   }
-  
+
   await fs.writeFile(audioPath, Buffer.concat(frames));
   return audioFileName;
 };
@@ -92,7 +94,7 @@ const generateSpeech = async (text, voice = 'narrator-warm', settings = {}) => {
   await ensureUploadsDir();
   const voiceConfig = VOICE_LIBRARY[voice] || VOICE_LIBRARY['narrator-warm'];
   const { speed = 1.0, pitch = 1.0, stability = 0.5, clarity = 0.75 } = settings;
-  
+
   try {
     const audio = await elevenlabs.generate({
       voice: voiceConfig.id,
@@ -105,21 +107,26 @@ const generateSpeech = async (text, voice = 'narrator-warm', settings = {}) => {
         use_speaker_boost: true
       }
     });
-    
+
     const audioFileName = `tts_${Date.now()}_${Math.random().toString(36).substring(7)}.mp3`;
     const audioPath = path.join(uploadsDir, audioFileName);
-    
+
     const chunks = [];
     for await (const chunk of audio) {
       chunks.push(chunk);
     }
     const buffer = Buffer.concat(chunks);
     await fs.writeFile(audioPath, buffer);
-    
+
     return audioFileName;
   } catch (error) {
-    console.error('ElevenLabs TTS error:', error.message);
-    console.log('Falling back to demo audio...');
+    console.error('ElevenLabs TTS error details:');
+    console.error('Message:', error.message);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', JSON.stringify(error.response.data));
+    }
+    console.log('Falling back to demo audio (silent MP3)...');
     return await generateDemoAudio();
   }
 };
@@ -141,11 +148,15 @@ router.post('/generate', protect, [
     const { text, voice = 'narrator-warm', speed = 1.0, pitch = 1.0, stability = 0.5, clarity = 0.75 } = req.body;
 
     const audioFileName = await generateSpeech(text, voice, { speed, pitch, stability, clarity });
-    
+
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers['host'];
+    const absoluteAudioUrl = `${protocol}://${host}/api/tts/audio/${audioFileName}`;
+
     res.json({
       message: 'Audio generated successfully',
       audioFile: audioFileName,
-      audioUrl: `/uploads/${audioFileName}`,
+      audioUrl: absoluteAudioUrl,
       settings: { voice, speed, pitch, stability, clarity, duration: Math.ceil(text.length / 180) * 60 }
     });
 
@@ -170,7 +181,7 @@ router.post('/chapter/:id', protect, [
     }
 
     const chapter = await Chapter.findById(req.params.id);
-    
+
     if (!chapter) {
       return res.status(404).json({ message: 'Chapter not found' });
     }
@@ -190,7 +201,7 @@ router.post('/chapter/:id', protect, [
     };
 
     const audioFileName = await generateSpeech(chapter.content, audioSettings.voice, audioSettings);
-    
+
     if (saveVersion && chapter.audioFile) {
       const nextVersion = (chapter.audioVersionHistory?.length || 0) + 1;
       chapter.audioVersionHistory = chapter.audioVersionHistory || [];
@@ -200,10 +211,14 @@ router.post('/chapter/:id', protect, [
         settings: { ...chapter.audioSettings, backgroundMusic: chapter.backgroundMusic?.trackId }
       });
     }
-    
+
     chapter.audioFile = audioFileName;
     chapter.audioSettings = audioSettings;
     await chapter.save();
+
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers['host'];
+    const absoluteAudioUrl = `${protocol}://${host}/api/tts/audio/${audioFileName}`;
 
     res.json({
       message: 'Chapter audio generated successfully',
@@ -211,7 +226,7 @@ router.post('/chapter/:id', protect, [
         id: chapter._id,
         title: chapter.title,
         audioFile: audioFileName,
-        audioUrl: `/uploads/${audioFileName}`,
+        audioUrl: absoluteAudioUrl,
         audioSettings,
         versionHistory: chapter.audioVersionHistory
       }
@@ -226,7 +241,7 @@ router.post('/chapter/:id', protect, [
 router.put('/chapter/:id/settings', protect, async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.id);
-    
+
     if (!chapter) {
       return res.status(404).json({ message: 'Chapter not found' });
     }
@@ -272,13 +287,16 @@ router.put('/chapter/:id/settings', protect, async (req, res) => {
 router.get('/chapter/:id/versions', protect, async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.id);
-    
+
     if (!chapter) {
       return res.status(404).json({ message: 'Chapter not found' });
     }
 
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers['host'];
+
     res.json({
-      currentAudio: chapter.audioFile ? { audioFile: chapter.audioFile, audioUrl: `/uploads/${chapter.audioFile}`, settings: chapter.audioSettings } : null,
+      currentAudio: chapter.audioFile ? { audioFile: chapter.audioFile, audioUrl: `${protocol}://${host}/api/tts/audio/${chapter.audioFile}`, settings: chapter.audioSettings } : null,
       versionHistory: chapter.audioVersionHistory || []
     });
 
@@ -291,7 +309,7 @@ router.get('/chapter/:id/versions', protect, async (req, res) => {
 router.post('/chapter/:id/restore/:version', protect, async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.id);
-    
+
     if (!chapter) {
       return res.status(404).json({ message: 'Chapter not found' });
     }
@@ -320,12 +338,15 @@ router.post('/chapter/:id/restore/:version', protect, async (req, res) => {
     chapter.audioSettings = versionToRestore.settings || chapter.audioSettings;
     await chapter.save();
 
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers['host'];
+
     res.json({
       message: 'Audio version restored',
       chapter: {
         id: chapter._id,
         audioFile: chapter.audioFile,
-        audioUrl: `/uploads/${chapter.audioFile}`,
+        audioUrl: `${protocol}://${host}/api/tts/audio/${chapter.audioFile}`,
         audioSettings: chapter.audioSettings
       }
     });
@@ -401,7 +422,7 @@ router.get('/sound-effects', protect, async (req, res) => {
 router.delete('/chapter/:id/audio', protect, async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.id);
-    
+
     if (!chapter) {
       return res.status(404).json({ message: 'Chapter not found' });
     }
@@ -414,7 +435,7 @@ router.delete('/chapter/:id/audio', protect, async (req, res) => {
       return res.status(404).json({ message: 'No audio file found for this chapter' });
     }
 
-    const audioPath = path.join(__dirname, '../uploads', chapter.audioFile);
+    const audioPath = path.join(uploadsDir, chapter.audioFile);
     try {
       await fs.unlink(audioPath);
     } catch (fileError) {
@@ -430,6 +451,12 @@ router.delete('/chapter/:id/audio', protect, async (req, res) => {
     console.error('Delete chapter audio error:', error.message);
     res.status(500).json({ message: 'Server error deleting audio' });
   }
+});
+
+router.get('/audio/:filename', (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(uploadsDir, filename);
+  res.sendFile(filePath);
 });
 
 module.exports = router;

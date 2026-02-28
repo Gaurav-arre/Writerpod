@@ -1,3 +1,4 @@
+// WriterPod API Server
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -72,17 +73,17 @@ app.use('/api/ai', require('./routes/ai'));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     message: 'WriterPod API is running',
-    timestamp: new Date().toISOString() 
+    timestamp: new Date().toISOString()
   });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
   });
